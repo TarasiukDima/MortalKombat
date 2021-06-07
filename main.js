@@ -1,41 +1,47 @@
+const $arena = document.querySelector('.arenas');
+const $randomButton = document.querySelector('.control button');
+
+
+/* players entity start */
 const scorpion = {
+    playerId: 1,
     name: 'Scorpion',
     hp: 100,
     img: 'http://reactmarathon-api.herokuapp.com/assets/scorpion.gif',
-    attack: function() {
-        console.log( this.name + ', Fight!!!');
+    attack: function () {
+        console.log(this.name + ', Fight!!!');
     }
 }
 
 const liuKang = {
+    playerId: 2,
     name: 'Liu Kang',
     hp: 100,
     img: 'http://reactmarathon-api.herokuapp.com/assets/liukang.gif',
-    attack: function() {
-        console.log( this.name + ', Fight!!!');
+    attack: function () {
+        console.log(this.name + ', Fight!!!');
     }
 }
+/* players entity end */
 
 
-// First varient
-function createPlayer(classNamePlayer, {name, hp, img}) {
-    const $player = document.createElement('div');
-    $player.classList.add(classNamePlayer);
+/* create player start */
+// function for create element start
+const createElementAndAddClass = (elem, className = '') => {
+    const $element = document.createElement(elem);
+    $element.classList.add(className);
+    return $element;
+}
 
-    const $progressbar = document.createElement('div');
-    $progressbar.classList.add('progressbar');
-
-    const $playerHealth = document.createElement('div');
-    $playerHealth.classList.add('life');
+// function for create player
+const createPlayer = ({ playerId, name, hp, img }) => {
+    const $player = createElementAndAddClass('div', 'player' + playerId);
+    const $progressbar = createElementAndAddClass('div', 'progressbar');
+    const $playerHealth = createElementAndAddClass('div', 'life');
     $playerHealth.style.width = hp + "%";
-
-    const $playerName = document.createElement('div');
-    $playerName.classList.add('name');
+    const $playerName = createElementAndAddClass('div', 'name');
     $playerName.innerText = name;
-
-    const $character = document.createElement('div');
-    $character.classList.add('character');
-
+    const $character = createElementAndAddClass('div', 'character');
     const $playerImg = document.createElement('img');
     $playerImg.setAttribute('src', img)
 
@@ -48,62 +54,56 @@ function createPlayer(classNamePlayer, {name, hp, img}) {
     $player.appendChild($progressbar);
     $player.appendChild($character);
 
-    document.querySelector('.arenas').appendChild($player);
+    return $player;
 }
-createPlayer('player1', scorpion);
-createPlayer('player2', liuKang);
+
+// add players in arena dom
+$arena.appendChild(createPlayer(scorpion));
+$arena.appendChild(createPlayer(liuKang));
+/* create player end */
+
+
+/* functions for play start */
+// function for retutn random number from 1 to 20
+const randomNumberValue = () => {
+    return Math.ceil(Math.random() * 20);
+}
+
+// function for retutn game text
+const returnGameResult = (name, text) => {
+    const $loseTitile = createElementAndAddClass('div', 'loseTitle');
+    $loseTitile.innerText = name + text;
+
+    return $loseTitile;
+}
+
+// function for change data player
+const changeHp = (player) => {
+    const $playerLife = document.querySelector(`.player${player.playerId} .life`);
+
+    player.hp -= randomNumberValue();
+
+    (player.hp < 0) && (player.hp = 0);
+    $playerLife.style.width = player.hp + "%";
+
+    if (player.hp <= 0) {
+        $randomButton.disabled = true;
+        return 'lose';
+    }
+}
+
+// function for change data player
+const gameRaund = (palyer1, player2) => {
+    const players = [palyer1.name, player2.name];
+
+    const playerName1 = changeHp(palyer1);
+    const playerName2 = changeHp(player2);
+
+    playerName1 && $arena.appendChild(returnGameResult(players[1], ' Win!!!'))
+    playerName2 && $arena.appendChild(returnGameResult(players[0], ' Win!!!'))
+}
+/* functions for play end */
 
 
 
-// Second varient
-// const createElementAndAddClass = (elem, className = '') => {
-//     const $element = document.createElement(elem);
-//     $element.classList.add(className);
-//     return $element;
-// }
-
-// const createPlayer = (classNamePlayer, {name, hp, img}) => {
-//     const $player = createElementAndAddClass('div', classNamePlayer);
-//     const $progressbar = createElementAndAddClass('div', 'progressbar');
-//     const $playerHealth = createElementAndAddClass('div', 'life');
-//     $playerHealth.style.width = hp + "%";
-//     const $playerName = createElementAndAddClass('div', 'name');
-//     $playerName.innerText = name;
-//     const $character = createElementAndAddClass('div', 'character');
-//     const $playerImg = document.createElement('img');
-//     $playerImg.setAttribute('src', img)
-
-
-//     $progressbar.appendChild($playerHealth);
-//     $progressbar.appendChild($playerName);
-
-//     $character.appendChild($playerImg);
-
-//     $player.appendChild($progressbar);
-//     $player.appendChild($character);
-
-//     document.querySelector('.arenas').appendChild($player);
-// }
-// createPlayer('player1', scorpion);
-// createPlayer('player2', liuKang);
-
-
-// Third varient
-// const createPlayer = (classNamePlayer, {name, hp, img}) => {
-//     const $player = `<div class=${classNamePlayer}>
-//         <div class="progressbar">
-//             <div class="life" style="width: ${hp}%"></div>
-//             <div class="name">${name}</div>
-//         </div>
-//         <div class="character">
-//             <img src="${img}" />
-//         </div>
-//     </div>`;
-
-//     let $elementGame = document.querySelector('.arenas');
-//     let innerHtmlElemnt = $elementGame.innerHTML;
-
-//     $elementGame.innerHTML = innerHtmlElemnt + $player;
-// }
-// createPlayer('player1', scorpion);
-// createPlayer('player2', liuKang);
+$randomButton.addEventListener( 'click', () => gameRaund(scorpion, liuKang) );
